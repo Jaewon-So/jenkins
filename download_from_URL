@@ -1,0 +1,82 @@
+from sqlalchemy import create_engine
+import pymysql
+import pandas as pd
+import csv
+import requests
+
+import os
+from datetime import datetime
+from airflow.models import DAG
+from airflow.operators.python import PythonOperator
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.providers.mysql.hooks.mysql import MySqlHook
+
+
+def upload_url_to_mysql():
+    #src info
+    url = 'https://www.data.go.kr/cmm/cmm/fileDownload.do?fileDetailSn=1&atchFileId=FILE_000000002398622&dataNm=%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%EC%86%8C%EB%85%84%EB%B2%94%EC%A3%84'
+    outfile = './LO_file.csv'
+
+    #db info
+    db_connection_str = 'mysql+pymysql://admin:wodnjs12@jaewon8mysql.cl828vh3vdhq.ap-northeast-2.rds.amazonaws.com:3306/jaewon'
+    db_connection = create_engine(db_connection_str)
+    conn = db_connection.connect()
+    table_name = 'accum_sum'
+
+    req = requests.get(url)
+    req.encoding = 'euc-kr'
+    url_content = req.content.decode('euc-kr')
+    csv_file = open(outfile, 'wb')
+    #print(url_content)
+
+    #save url to csv
+    csv_file.write(url_content.encode('utf-8'))
+    csv_file.close()
+
+    #save data at db
+    data = pd.read_csv(outfile, delimiter = ',')
+    data.to_sql(name=table_name, con=db_connection, if_exists='append', index=False)
+
+
+
+
+
+#upload data to S3
+def upload_to_s3(filename: str, key: str, bucket_name: str) -> None:
+    hook = S3Hook('s3_conn')
+    hook.load_file(filename=filename, key=key, bucket_name=bucket_name)
+
+'''
+def rename_file(ti, new_name: str) -> None:
+    downloaded_file_name = ti.xcom_pull(task_ids=['download_from_s3'])
+    downloaded_file_path = '/'.join(downloaded_file_name[0].split('/')[:-1])
+    os.rename(src=downloaded_file_name[0], dst=f"{downloaded_file_path}/{new_name}")
+'''
+
+
+
+    
+with DAG(
+    dag_id='airflow',
+    schedule_interval='@daily',
+    start_date=datetime(2022, 8, 3),
+    catchup=False
+) as dag:
+
+    task_upload_url_to_mysql = PythonOperator(
+        task_id = 'upload_url_to_mysql'
+        python_callable=upload_url_to_mysql  
+    )
+
+    # upload a file to s3
+    task_upload_to_s3 = PythonOperator(
+        task_id='upload_to_s3',
+        python_callable=upload_to_s3, #function name above 
+        op_kwargs={
+            'filename': './L0_file.csv'
+            'key': 'criminal.csv',
+            'bucket_name': 'jaewon-bucket',
+        }
+    )
+
+    task_upload_url_to_mysql >> task_upload_to_s3
