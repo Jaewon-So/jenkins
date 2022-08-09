@@ -7,4 +7,7 @@ AIRFLOW_UID=50000
 
 sudo docker-compose up airflow-init
 
+airflow:airflow
+ip:8080
+
 sudo docker-compose up
