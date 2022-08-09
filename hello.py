@@ -1,8 +1,0 @@
-print("hello World")
-print("hello cns")
-print("hello LG")
-print("Jaewon")
-print("Sungwon")
-print("LGCNS")
-print("HHHHHHHH")
-print ("I'm Back")
