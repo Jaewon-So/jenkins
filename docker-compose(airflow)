@@ -1,0 +1,27 @@
+  environment:
+    &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
+    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+    AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
+    AIRFLOW_CONN_AWS_DEFAULT: aws://${AWS_ACCESS_KEY}:${AWS_SECRET_KEY}@
+    AIRFLOW__CORE__DEFAULT_TIMEZONE: Asia/Seoul
+    AIRFLOW_CONN_MYSQL_DEFAULT: mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DB_NAME}
+    
+.env
+  AIRFLOW_UID=50000
+  AWS_ACCESS_KEY=ACCESS_KEY
+  AWS_SECRET_KEY_1=FRONT_OF_SECRET_KEY
+  AWS_SECRET_KEY_2=BACK_OF_SECRET_KEY
+  DB_USER=USER
+  DB_PASSWORD=PASSWORD
+  DB_HOST=HOST
+  DB_PORT=PORT
+  DB_DB_NAME=DB_NAME
+  
+  / = %2F
