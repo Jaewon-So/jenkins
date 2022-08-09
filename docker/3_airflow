@@ -11,3 +11,6 @@ airflow:airflow
 ip:8080
 
 sudo docker-compose up
+
+
+Note here, that the secret access key has been URL-encoded (changing / to %2F)
