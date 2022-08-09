@@ -2,10 +2,10 @@ sudo yum install git
 
 git clone https://github.com/apache/superset.git
 cd superset
-sudo docker-compose up
 
-# docker-compose -f docker-compose-non-dev.yml pull
-# docker-compose -f docker-compose-non-dev.yml up
+docker-compose -f docker-compose-non-dev.yml pull
+docker-compose -f docker-compose-non-dev.yml up
+
 # git checkout 1.4.0
 # TAG=1.4.0 docker-compose -f docker-compose-non-dev.yml pull
 # TAG=1.4.0 docker-compose -f docker-compose-non-dev.yml up
